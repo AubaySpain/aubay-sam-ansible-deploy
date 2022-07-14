@@ -1,0 +1,42 @@
+- name: Create backup directory
+  ansible.builtin.file:
+    path: /var/backup
+    state: directory
+    mode: '0777'
+
+- name: Enable backups path
+  ansible.builtin.file:
+    path: /var/backup/postgis
+    state: directory
+    mode: '0777'
+
+- name: Create link to the systemd unit postgis_backup.service
+  ansible.builtin.file:
+    src: /etc/sam/systemd/postgis_backup.service
+    dest: /etc/systemd/system/postgis_backup.service
+    owner: root
+    group: root
+    state: link
+
+- name: Create link to the systemd unit postgis_backup.timer
+  ansible.builtin.file:
+    src: /etc/sam/systemd/postgis_backup.timer
+    dest: /etc/systemd/system/postgis_backup.timer
+    owner: root
+    group: root
+    state: link
+
+- name: Enable systemd unit postgis_backup.service
+  ansible.builtin.service:
+    name: postgis_backup.service
+    enabled: yes
+
+- name: Enable timer postgis_backup.timer
+  ansible.builtin.service:
+    name: postgis_backup.timer
+    enabled: yes
+
+- name: Start the timer postgis_backup.timer
+  ansible.builtin.service:
+    name: postgis_backup.timer
+    state: restarted

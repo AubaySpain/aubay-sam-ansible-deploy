@@ -1,0 +1,12 @@
+# https://wiki.archlinux.org/title/Systemd/Timers
+# Transient timer units
+# One can use systemd-run to create transient .timer units. That is, one can set a command to run at a specified time without having a service file. For example the following command touches a file after 30 seconds:
+# systemd-run --on-active=30 /bin/touch /tmp/foo
+# systemd-run --on-active=30 iptables -P INPUT ACCEPT
+
+- name: Entry message to the control playbook of antiblock protection activation
+  ansible.builtin.debug:
+    msg: "Running antiblock playbook for the firewall. DO NOT USE IN PRODUCTION!!!"
+
+- name: Launch a Transient timer unit to schedule the ACCEPT policie for the INPUT chain
+  ansible.builtin.command: systemd-run --on-active=60 /usr/sbin/iptables -P INPUT ACCEPT

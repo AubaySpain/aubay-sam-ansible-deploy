@@ -1,0 +1,22 @@
+- name: aws configure set aws_access_key_id
+  command: aws configure set aws_access_key_id {{ aws_access_key_id }}
+  when: aws_access_key_id is defined
+  no_log: True
+  tags: aws
+
+- name: aws configure set aws_secret_access_key
+  command: aws configure set aws_secret_access_key {{ aws_secret_access_key }}
+  when: aws_secret_access_key is defined
+  no_log: True
+  tags: aws
+
+- name: aws configure set region eu-west-3c
+  command: aws configure set region eu-west-3c
+  no_log: True
+  tags: aws
+
+- name: Docker ECR register session initialization
+  shell: "aws ecr get-login-password --region {{ aws_ecr_registry_region }} | docker login --username AWS --password-stdin {{ aws_ecr_registry_uri }}"
+  args:
+    warn: no
+  tags: aws

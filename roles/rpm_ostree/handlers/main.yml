@@ -1,0 +1,4 @@
+- name: Overlay packages detected. Rebooting the machine for the new layer to take effect
+  reboot:
+    reboot_timeout: 180
+  listen: "reboot system"

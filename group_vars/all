@@ -1,0 +1,2 @@
+# Where to store the assets in the target
+assets_path: /etc/sam

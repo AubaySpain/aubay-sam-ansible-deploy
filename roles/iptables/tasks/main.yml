@@ -1,0 +1,81 @@
+###################################
+# ANTIBLOCK SYSTEM ACTIVATION
+###################################
+- name: Antiblock system activation
+  include: antiblock_protection.yml
+  when: firewall.antiblock_protection
+###################################
+
+####################################################################
+# SET DEFAULT CONFIGURED POLICIES TO ACCEPT
+####################################################################
+- name: Set default configured policies to accept
+  include: default_policy.yml
+  when: not firewall.enabled
+####################################################################
+
+############################
+# USER RULES DEBUG
+############################
+- name: Show user rules
+  ansible.builtin.debug:
+    msg:
+    - "chain: {{ item.0.name }} "
+    - "destination_port: {{ item.1.destination_port }} "
+  with_subelements:
+    - "{{ firewall.chains }}"
+    - rules
+  when: firewall.debug
+############################
+
+###################################
+# CLEAN DOCKER-USER RULES
+###################################
+- name: Clean DOCKER-USER rules
+  ansible.builtin.iptables:
+    chain: DOCKER-USER
+    flush: yes
+###################################
+
+##############################
+# USER RULES MANAGEMENT
+##############################
+- name: User rules tasks
+  include_tasks: rule_management.yml
+  with_subelements:
+    - "{{ firewall.chains }}"
+    - rules
+##############################
+
+##############################
+# STATE RULES MANAGEMENT
+##############################
+- name: State rules tasks
+  include_tasks: ctstate.yml
+##############################
+
+#######################################
+# DOCKER-USER DROP RULE INSERTION
+#######################################
+- name: Add drop rule to DOCKER-USER
+  ansible.builtin.iptables:
+    chain: DOCKER-USER
+    jump: DROP
+    state: "{% if firewall.enabled is defined and firewall.enabled | bool %}present{% else %}absent{% endif %}"
+    comment: "Drop the rest of the packets"
+
+#########################################
+# ADD DOCKER-USER RETURN
+#########################################
+- name: Add RETURN rule to the end of DOCKER-USER chain
+  ansible.builtin.iptables:
+    chain: DOCKER-USER
+    jump: RETURN
+    comment: "RETURN rule to return to the calling chain"
+
+#################################################
+# DEFAULT POLICIES CHANGES
+#################################################
+- name: Default policies creation tasks
+  include: default_policy.yml
+  when: firewall.enabled

@@ -1,0 +1,80 @@
+- name: Show ansible execution enviroment
+  ansible.builtin.debug:
+    msg: "The ansible execution enviroment is: {{ sam_env }}"
+
+#########################
+# prod overlays
+#########################
+- name: Install overlay python package
+  community.general.rpm_ostree_pkg:
+    name: python
+    state: present
+  notify: "reboot system"
+
+- name: Install overlay pip package
+  community.general.rpm_ostree_pkg:
+    name: pip
+    state: present
+  notify: "reboot system"
+
+- name: Install overlay awscli package
+  community.general.rpm_ostree_pkg:
+    name: awscli
+    state: present
+  notify: "reboot system"
+
+#########################
+# dev overlays
+#########################
+# ./main.yml --tags rpm --extra-var sam_env=dev -e "@files/secret_vars.yml" --vault-id dev@~/.secrets/fjrojas_dev_password_file.txt
+- name: Install overlay tmux package
+  community.general.rpm_ostree_pkg:
+    name: tmux
+    state: present
+  notify: "reboot system"
+  when: sam_env|lower == "dev"
+
+- name: Install overlay emacs-nox package
+  community.general.rpm_ostree_pkg:
+    name: emacs-nox
+    state: present
+  notify: "reboot system"
+  when: sam_env|lower == "dev"
+
+- name: Install overlay htop package
+  community.general.rpm_ostree_pkg:
+    name: htop
+    state: present
+  notify: "reboot system"
+  when: sam_env|lower == "dev"
+
+- name: Install overlay netcat package
+  community.general.rpm_ostree_pkg:
+    name: netcat
+    state: present
+  notify: "reboot system"
+  when: sam_env|lower == "dev"
+
+- name: Trigger a reboot
+  debug: var=hostvars[inventory_hostname]['ansible_default_ipv4']['address']
+  tags: reboot
+  notify: "reboot system"
+  when: sam_env|lower == "reboot"
+
+- name: Flush handlers
+  meta: flush_handlers
+  tags: reboot
+
+######################################
+# Disable local console
+######################################
+# https://docs.fedoraproject.org/en-US/fedora-coreos/emergency-shell/
+# https://www.mankier.com/1/rpm-ostree
+- name: Disable local console console=tty0
+  command: rpm-ostree kargs --delete-if-present 'console=tty0'
+  tags: console
+
+- name: Disable local console console=ttyS0,115200n8
+  command: rpm-ostree kargs --delete-if-present 'console=ttyS0,115200n8'
+  tags: console
+

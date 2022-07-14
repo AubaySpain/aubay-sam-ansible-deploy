@@ -1,0 +1,34 @@
+- name: Create /var/home/sam/.bashrc.d directory if it does not exist
+  ansible.builtin.file:
+    path: /var/home/{{ item.user }}/.bashrc.d
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: '0700'
+  with_items:
+    - { user: core, owner: core, group: core }
+    - { user: sam, owner: sam, group: sam }
+
+- name: Copy alias.bash file
+  ansible.builtin.copy:
+    src: sam_alias.bash
+    dest: /var/home/sam/.bashrc.d/alias.bash
+    owner: sam
+    group: sam
+    mode: '0600'
+
+- name: Copy alias.bash file
+  ansible.builtin.copy:
+    src: core_alias.bash
+    dest: /var/home/core/.bashrc.d/alias.bash
+    owner: core
+    group: core
+    mode: '0600'
+
+- name: Create sam symbolic link to home
+  ansible.builtin.file:
+    src: /etc/sam
+    dest: /var/home/core/sam
+    owner: core
+    group: core
+    state: link

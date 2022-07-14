@@ -1,0 +1,11 @@
+#############################################################
+# FILTER CHAIN STATE CONNECTION MANAGEMENT
+#############################################################
+- name: Add/Delete state system rules
+  ansible.builtin.iptables:
+    chain: "{{ item.chain }}"
+    ctstate: "{{ item.ctstate }}"
+    jump: "{{ item.jump }}"
+    state: "{% if firewall.enabled is defined and firewall.enabled | bool %}present{% else %}absent{% endif %}"
+    comment: "{{ item.comment | default(firewall.default_comment) }}"
+  with_items: "{{ iptables_state_rules }}"

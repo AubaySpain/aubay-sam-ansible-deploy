@@ -1,0 +1,29 @@
+######################################
+# CONECTION STATE FILTERING
+######################################
+iptables_state_rules:
+# INPUT CHAIN
+  - input_state:
+    description: input_state
+    chain: INPUT
+    ctstate: ESTABLISHED,RELATED
+    jump: ACCEPT
+
+# DOCKER-USER CHAIN
+  - docker_user_state:
+    description: docker_user_state
+    chain: DOCKER-USER
+    ctstate: ESTABLISHED,RELATED
+    jump: ACCEPT
+######################################
+
+#######################
+# DEFAULT POLICIES
+#######################
+iptables_default_policies:
+  - input_default_drop:
+    description: input_default_drop
+    chain: INPUT
+    policy: DROP
+    #policy: ACCEPT
+#######################

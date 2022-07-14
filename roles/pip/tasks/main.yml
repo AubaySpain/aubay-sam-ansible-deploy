@@ -1,0 +1,11 @@
+- name: Install requests python package
+  pip:
+    name: requests
+
+- name: Install docker python package
+  pip:
+    name: docker
+
+- name: Install jsondiff python package
+  pip:
+    name: jsondiff

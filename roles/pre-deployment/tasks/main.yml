@@ -1,0 +1,54 @@
+- name: Create the require folders in the target node
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: "{{ item.state }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  with_items: "{{ folders }}"
+
+# FILES
+- name: Copy README.md file
+  ansible.builtin.copy:
+    src: README.md
+    dest: "{{sam_path}}/README.md"
+    owner: core
+    group: sam
+    mode: '0400'
+
+- name: Check if the stack-version.txt file exist
+  stat:
+    path: "{{sam_path}}/stack-version.txt"
+  register: stack_version_file
+
+- name: If the stack-version.txt file does not exist, it is created
+  copy:
+    dest: "{{sam_path}}/stack-version.txt"
+    content: |
+      0
+    owner: core
+    group: core
+    mode: '0600'
+  when: not stack_version_file.stat.exists
+
+# FILES FOLDERS
+- name: Transfer non encrypted files folders
+  ansible.builtin.copy:
+    src: "files/{{ item.src }}"
+    dest: "{{sam_path}}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+    directory_mode: "{{ item.directory_mode }}"
+  with_items: "{{ files_folders }}"
+
+# TEMPLATES
+- name: Generate assets from templates and transfer them to the target node
+  ansible.builtin.template:
+    src: "{{ templates_path }}/{{ item.src }}"
+    dest: "{{ item.dest }}"
+    force: "{{ item.force }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  with_items: "{{ templates }}"

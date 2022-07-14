@@ -1,0 +1,22 @@
+- name: Enable docker daemon mode to execute in swarm mode
+  ansible.builtin.lineinfile:
+    path: /etc/sysconfig/docker
+    regexp: '^  --live-restore'
+    line: '  --live-restore=false \'
+
+- name: Enable docker service
+  ansible.builtin.service:
+    name: docker
+    enabled: yes
+
+- name: Restart docker service
+  ansible.builtin.service:
+    name: docker
+    state: restarted
+
+# ansible-galaxy collection install community.docker
+# docker swarm init
+# docker swarm leave --force
+- name: Swarm initialition
+  community.docker.docker_swarm:
+    state: present

@@ -1,0 +1,101 @@
+- name: Get current version from stack-version.txt remote file
+  command: cat /etc/sam/stack-version.txt
+  register: stack_version
+
+- set_fact:
+    current_stack_version_np: "{{ stack_version.stdout|int +1 }}"
+- set_fact:
+    current_stack_version: "{{ '%05d' | format( current_stack_version_np|int  ,) }}"
+
+- name: Show current stack version
+  debug:
+    msg: "The stack version is {{ current_stack_version }}"
+
+# docker secret ls --format {{.Name}} |xargs docker secret rm
+# https://www.middlewareinventory.com/blog/ansible-lookup-file/
+- name: Create template secrets from the control node
+  community.docker.docker_secret:
+    name: "{{ item.name }}_{{ current_stack_version }}"
+    # If the file is JSON or binary, Ansible might modify it (because
+    # it is first decoded and later re-encoded). Base64-encoding the
+    # file directly after reading it prevents this to happen.
+
+    data: "{{ lookup('template', '{{ templates_with_secrets_path }}/{{ item.file }}') | b64encode }}"
+    data_is_b64: true
+    state: present
+  with_items: "{{ template_secrets }}"
+
+- name: Create static secrets from de control node
+  community.docker.docker_secret:
+    name: "{{ item.name }}_{{ current_stack_version }}"
+    data: "{{ lookup('file', '{{ vault_secrets_path }}/{{ item.file }}') | b64encode }}"
+    data_is_b64: true
+    state: present
+  with_items: "{{ static_secrets }}"
+
+- name: Generate /etc/sam/aubay-sam-openvidu-stack.yml file from template 
+  ansible.builtin.template:
+    src: "{{ templates_path }}/aubay-sam-openvidu-stack.j2"
+    dest: /etc/sam/aubay-sam-openvidu-stack.yml
+    force: yes
+    owner: core
+    group: core
+    mode: '0400'
+
+- name: Ensure we are logged to the docker ECR register
+  shell: "aws ecr get-login-password --region eu-west-3 | docker login --username AWS --password-stdin 876280109426.dkr.ecr.eu-west-3.amazonaws.com"
+  args:
+    warn: no
+
+- name: Create frontend-theme volume
+  community.docker.docker_volume:
+    name: frontend-theme
+  tags: stack-up-cp
+
+- name: Create backend-filesystem volume
+  community.docker.docker_volume:
+    name: backend-filesystem
+  tags: stack-up-cp
+
+- name: Create the temporal tianon container
+  community.docker.docker_container:
+    name: tianon
+    image: tianon/true
+    volumes:
+      - frontend-theme:/var/sam-theme
+      - backend-filesystem:/var/aubay-sam
+  tags: stack-up-cp
+
+# https://hub.docker.com/r/tianon/true/
+- name: Copy SAM custom theme to the frontend-theme volume
+  ansible.builtin.shell: docker cp {{sam_path}}/frontend/sam-theme/ tianon:/var/
+  become: yes
+  tags: stack-up-cp
+
+- name: Copy json licence file to the volume
+  ansible.builtin.shell: docker cp {{sam_path}}/license/license.json tianon:/var/aubay-sam/license.json
+  become: yes
+  when: sam_env|lower != "nolicense"
+  tags: stack-up-cp
+
+- name: Copy the signature licencia file to volume
+  ansible.builtin.shell: docker cp {{sam_path}}/license/license.signature tianon:/var/aubay-sam/license.signature
+  become: yes
+  when: sam_env|lower != "nolicense"
+  tags: stack-up-cp
+
+- name: Deploy the aubay-sam-stack stack
+  community.docker.docker_stack:
+    state: present
+    name: aubay-sam-stack
+    compose:
+      - /etc/sam/aubay-sam-openvidu-stack.yml
+    with_registry_auth: yes
+    prune: yes
+  tags: stack-up-cp
+
+- name: Update the stack version in the remote file
+  copy:
+    dest: "{{sam_path}}/stack-version.txt"
+    content: |
+      {{ stack_version.stdout|int +1 }}

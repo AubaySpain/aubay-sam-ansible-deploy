@@ -1,0 +1,8 @@
+# Where to look for templates using secrets
+templates_with_secrets_path: templates-con-secretos
+
+# Where to look for ansible vault secrets
+vault_secrets_path: secretos-ansible-vault
+
+# Where to look for templates
+templates_path: templates

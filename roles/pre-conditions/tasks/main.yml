@@ -1,0 +1,9 @@
+- name: Wait until the python is present (file /usr/bin/python is present) before continuing
+  wait_for:
+    host: '{{ (ansible_ssh_host|default(ansible_host))|default(inventory_hostname) }}'
+    path: /usr/bin/python
+    timeout: 5
+
+- name: Show sentinel vars
+  debug:
+    msg: "The execution environment is {{ sam_env }}"

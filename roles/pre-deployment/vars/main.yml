@@ -1,0 +1,71 @@
+# folder that must exist in the target node
+folders:
+  - etc_sam:
+    path: "{{sam_path}}"
+    state: directory
+    owner: core
+    group: sam
+    mode: '0775'
+
+  - openvidu:
+    path: "{{sam_path}}/openvidu"
+    state: directory
+    owner: core
+    group: sam
+    mode: '0770'
+
+# folder to transfer to the target node
+files_folders:
+  - bin:
+    src: bin
+    owner: root
+    group: root
+    mode: u+s,u+rwx,g+rx,o+rx
+    directory_mode: '0755'
+
+  - frontend:
+    src: frontend
+    owner: core
+    group: core
+    mode: '0444'
+    directory_mode: '0755'
+
+  - license:
+    src: license
+    owner: core
+    group: core
+    mode: '0400'
+    directory_mode: '0700'
+
+  - scripts:
+    src: scripts
+    owner: core
+    group: core
+    mode: '0700'
+    directory_mode: '0700'
+
+  - systemd:
+    src: systemd
+    owner: core
+    group: core
+    mode: '0400'
+    directory_mode: '0700'
+
+# folder to create to send templates
+templates_folders:
+  - openvidu:
+    path: "{{sam_path}}/openvidu"
+    state: directory
+    owner: core
+    group: sam
+    mode: '0770'
+
+# templates to process and to transfer to the target node
+templates:
+  - openvidu_env:
+    src: openvidu/.env.j2
+    dest: "{{sam_path}}/openvidu/.env"
+    force: yes
+    owner: core
+    group: core
+    mode: '0400'

@@ -1,0 +1,14 @@
+# Think twice before running following task with a DROP policy as this may lock target system
+- name: Set default policy to the required chains
+  ansible.builtin.iptables:
+    chain: "{{ item.chain }}"
+    policy: "{{ item.policy }}"
+  with_items: "{{ iptables_default_policies }}"
+  when: firewall.enabled
+
+- name: Set default policy to ACCEPT when we are disabling the firewall rules
+  ansible.builtin.iptables:
+    chain: "{{ item.chain }}"
+    policy: ACCEPT
+  with_items: "{{ iptables_default_policies }}"
+  when: not firewall.enabled

@@ -1,0 +1,40 @@
+- name: Show rules with origin filter
+  ansible.builtin.debug:
+    msg:
+      - "chain: {{ item[0].name }}"
+      - "source: {{ item[1].source }}"
+      - "destination_port: {{ item[1].destination_port }}"
+      - "protocol: {{ item[1].protocol|default('tcp') }}"
+      - "state: {% if firewall.enabled is defined and firewall.enabled | bool %}present{% else %}absent{% endif %}"
+  when: item[1].source is defined and firewall.debug
+
+- name: Show rules without origin filter
+  ansible.builtin.debug:
+    msg:
+      - "chain: {{ item[0].name }}"
+      - "protocol: {{ item[1].protocol|default('tcp') }}"
+      - "destination_port: {{ item[1].destination_port}}"
+      - "source: ALL"
+      - "state: {% if firewall.enabled is defined and firewall.enabled | bool %}present{% else %}absent{% endif %}"
+  when: item[1].source is defined and firewall.debug
+
+- name: Add/Delete user iptables rules
+  ansible.builtin.iptables:
+    chain: "{{ item[0].name }}"
+    protocol: "{{ item[1].protocol|default('tcp') }}"
+    destination_port: "{{ item[1].destination_port }}"
+    jump: "ACCEPT"
+    comment: "{{ item[1].comment | default(firewall.default_comment) }}"
+    state: "{% if firewall.enabled is defined and firewall.enabled | bool %}present{% else %}absent{% endif %}"
+  when: item[1].source is undefined
+
+- name: Add/Delete user iptables rules with origin filter
+  ansible.builtin.iptables:
+    chain: "{{ item[0].name }}"
+    protocol: "{{ item[1].protocol|default('tcp') }}"
+    source: "{{ item[1].source }}"
+    destination_port: "{{ item[1].destination_port }}"
+    jump: "ACCEPT"
+    comment: "{{ item[1].comment | default(firewall.default_comment) }}"
+    state: "{% if firewall.enabled is defined and firewall.enabled | bool %}present{% else %}absent{% endif %}"
+  when: item[1].source is defined

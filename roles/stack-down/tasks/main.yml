@@ -1,0 +1,4 @@
+- name: Shutdown and remve the aubay-sam-stack stack
+  community.docker.docker_stack:
+    name: aubay-sam-stack
+    state: absent
