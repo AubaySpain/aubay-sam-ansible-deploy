@@ -12,3 +12,13 @@ Name | Description
 --- | ---
 aws|Configure aws access, key id and secret, region and init session in Docker ECR
 backup|Configure automatic backup
+
+## Installation and Usage
+
+### Installing the Collection from Ansible Galaxy
+
+Before using the collection, you need to install it with the Ansible Galaxy CLI:
+
+```
+    ansible-galaxy install -r requirements.yml
+```
