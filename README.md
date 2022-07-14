@@ -20,5 +20,7 @@ backup|Configure automatic backup
 Before using the collection, you need to install it with the Ansible Galaxy CLI:
 
 ```
-    ansible-galaxy install -r requirements.yml
+    ansible-galaxy collection install git@github.com:AubaySpain/aubay-sam-ansible-deploy.git
 ```
+
+If you use this repo, you can also install it via `ansible-galaxy collection install -r requirements.yml` from the root folder.
