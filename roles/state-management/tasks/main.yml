@@ -1,0 +1,36 @@
+- name: Create the require folders in the target node
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: "{{ item.state }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  with_items: "{{ folders }}"
+
+- name: Check if the deployment-phase.txt file exist
+  stat:
+    path: "{{sam_path}}/deployment-phase.txt"
+  register: deployment_phase_file
+
+- name: If the deployment-phase.txt file does not exist, it is created
+  copy:
+    dest: "{{sam_path}}/deployment-phase.txt"
+    content: |
+      1
+    owner: core
+    group: core
+    mode: '0600'
+  when: not deployment_phase_file.stat.exists
+
+- name: Get current phase number from deployment-phase.txt remote file
+  command: cat /etc/sam/deployment-phase.txt
+  register: deployment_phase
+
+- set_fact:
+    current_stack_version: "{{ deployment_phase.stdout|int +1 }}"
+#- set_fact:
+#    current_stack_version: "{{ '%05d' | format( current_stack_version_np|int  ,) }}"
+
+- name: Show current stack version
+  debug:
+    msg: "The stack version is {{ current_stack_version }}"
