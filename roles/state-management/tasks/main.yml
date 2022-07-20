@@ -16,7 +16,7 @@
   copy:
     dest: "{{sam_path}}/deployment-phase.txt"
     content: |
-      1
+      0
     owner: core
     group: core
     mode: '0600'
@@ -28,8 +28,6 @@
 
 - set_fact:
     current_stack_version: "{{ deployment_phase.stdout|int +1 }}"
-#- set_fact:
-#    current_stack_version: "{{ '%05d' | format( current_stack_version_np|int  ,) }}"
 
 - name: Show current stack version
   debug:

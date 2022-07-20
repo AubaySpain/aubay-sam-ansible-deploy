@@ -4,6 +4,13 @@
     path: /usr/bin/python
     timeout: 5
 
-- name: Show sentinel vars
-  debug:
-    msg: "The execution environment is {{ sam_env }}"
+- name: Check if the deployment-phase.txt file exist
+  stat:
+    path: "{{sam_path}}/deployment-phase.txt"
+  register: deployment_phase_file
+
+- name: If the deployment-phase.txt file exist, deployment phase 01 run it's not needed
+  meta:
+    end_play
+  when: deployment_phase_file.stat.exists
+
