@@ -33,10 +33,10 @@
     state: present
   with_items: "{{ static_secrets }}"
 
-- name: Generate /etc/sam/aubay-sam-openvidu-stack.yml file from template 
+- name: Generate /etc/sam/aubay-sam-stack.yml file from template 
   ansible.builtin.template:
-    src: "{{ templates_path }}/aubay-sam-openvidu-stack.j2"
-    dest: /etc/sam/aubay-sam-openvidu-stack.yml
+    src: "{{ templates_path }}/aubay-sam-stack.j2"
+    dest: /etc/sam/aubay-sam-stack.yml
     force: yes
     owner: core
     group: core
