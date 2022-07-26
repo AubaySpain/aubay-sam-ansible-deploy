@@ -89,7 +89,7 @@
     state: present
     name: aubay-sam-stack
     compose:
-      - /etc/sam/aubay-sam-openvidu-stack.yml
+      - /etc/sam/aubay-sam-stack.yml
     with_registry_auth: yes
     prune: yes
   tags: stack-up-cp
