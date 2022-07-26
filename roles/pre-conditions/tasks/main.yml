@@ -12,5 +12,5 @@
 - name: If the deployment-phase.txt file exist, deployment phase 01 run it's not needed
   meta:
     end_play
-  when: deployment_phase_file.stat.exists
-
+  when: (deploy_phase_01_idempotent|bool == True) and (deployment_phase_file.stat.exists)
+  #when: deployment_phase_file.stat.exists

@@ -1,2 +1,3 @@
 # Where to store the assets in the target
 assets_path: /etc/sam
+deploy_phase_01_idempotent: False
